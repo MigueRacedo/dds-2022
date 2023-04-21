@@ -1,0 +1,267 @@
+@startuml
+
+class Geodds {
+    Client client
+    static final String API_DISTANCIA
+    double getDistancia(Direccion direccionInicio, Direccion direccionFin)
+}
+
+interface Geolocalizacion {
+    double getDistancia(Direccion direccionInicio, Direccion direccionFin);
+}
+
+class AgenteSectorial {
+}
+
+class Miembro {
+    String nombre
+    String apellido
+    int numeroDocumento
+    void agregarTrayecto(Miembro miembro, Trayecto trayecto)
+    List<Organizacion> listaOrganizaciones()
+    List<Organizacion> listaOrganizacionesCompartidas(Miembro miembro)
+    boolean noCompartoOrganizacionCon(Miembro miembro)
+}
+
+enum TipoDocumento {
+    DNI
+    LIBRETA_CIVICA
+}
+
+class Contacto {
+    String mail
+    String telefono
+}
+
+class NotificacionCalendarizada {
+    void notificacion(int dia, int hora, int minuto, int semanasFrecuencia)
+}
+
+interface Notificador {
+    void notificar(Contacto contacto, String asunto, String cuerpo)
+}
+
+class NotificarPorMail {
+    String usuario
+    String contrasenia
+    Session abrirSesion()
+    Message construirCorreo(Session session, String destinatario, String asunto, String cuerpo)
+    void notificar(Contacto contacto, String asunto, String cuerpo)
+}
+
+class NotificarPorWhatsApp {
+    PhoneNumber from
+    String ACCOUNT_SID
+    String AUTH_TOKEN
+    void notificar(Contacto contacto, String asunto, String cuerpo)
+}
+
+class Temporizador {
+}
+
+enum Clasificacion {
+    MINISTERIO
+    UNIVERSIDAD
+    ESCUELA
+    EMPRESA_SECTOR_PRIMARIO
+    EMPRESA_SECTOR_SECUNDARIO
+}
+
+class FactorEmision {
+    int valor
+    String unidad
+    void cambiarValor(int valor, String unidad)
+    void validarUnidad(String unidad, TipoConsumo tipoConsumo)
+}
+
+class Medicion {
+    BigDecimal valor
+    String periodicidad
+    String periodicidadDeImputacion
+}
+
+class Organizacion {
+    String razonSocial
+    List<Double> hcTotal
+    void cargarMediciones(String path, List<TipoConsumo> tiposExistentes)
+    double getHCTotal(String unidad)
+    List<Double> getHCPorPorcentaje(List<String> unidades)
+    void notificarGuiaRecomendaciones()
+}
+
+class Sector {
+    double getHuellaCarbono(String unidad)
+    double getHuellaCarbonoSobreMiembros(String unidad)
+}
+
+class SectorTerritorial {
+    double getCalculoHCTotal(String unidad)
+    List<List<Double>> getHcSector(List<String>unidades)
+    List<List<Double>> getHcEvolucion()
+}
+
+class TipoConsumo {
+    String tipo
+    String unidad
+    String actividad
+    int alcance
+    boolean esMismoTipo(String tipo)
+}
+
+enum TipoOrganizacion {
+    GUBERNAMENTAL
+    ONG
+    EMPRESA
+    INSTITUCION
+}
+
+enum TipoSectorTerritorial {
+    DEPARTAMENTO,PROVINCIA
+}
+
+class APie {
+    boolean seComparte()
+}
+
+class Bicicleta {
+    boolean seComparte()
+}
+
+class Parada {
+    String direccion
+}
+
+
+class ServicioContratado {
+    boolean seComparte()
+}
+
+enum TipoCombustible {
+    GNC
+    NAFTA
+    GASOIL
+    ELECTRICO
+}
+
+enum TipoServicioContratado {
+    TAXI
+    REMIS
+}
+
+enum TipoTransportePublico {
+    TREN
+    SUBTE
+    COLECTIVO
+}
+
+enum TipoVehiculo {
+    MOTO
+    AUTO
+    CAMIONETA
+}
+
+abstract class Transporte {
+    double getDistancia(Punto puntoInicio, Punto puntoFin)
+    FactorEmision getFactorEmision()
+    boolean seComparte()
+}
+
+abstract class TransportePrivado {
+    double getDistancia(Punto puntoInicio, Punto puntoFin)
+}
+
+class TransportePublico {
+    int linea
+    double getDistancia(Punto p1, Punto p2)
+}
+
+class VehiculoParticular {
+    boolean seComparte()
+}
+
+class Direccion {
+    String localidad
+    String calle
+    String altura
+}
+
+class Distancia {
+    Double unidad
+    String valor
+}
+
+class Parada {
+    double distanciaProximaParada
+}
+
+class Punto {
+}
+
+class Tramo {
+    boolean esCompartido()
+    double getHC(String unidad)
+}
+
+class Trayecto {
+    double distanciaTotal()
+    boolean puedoCompartir()
+    double getHC(String unidad)
+}
+
+Miembro --> TipoDocumento
+Miembro --> "*" Trayecto
+Miembro --> "trabajos" Sector
+
+Organizacion --> TipoOrganizacion
+Organizacion --> Clasificacion
+Organizacion --> "*" Sector
+Organizacion --> "*" Medicion
+Organizacion --> Direccion
+Organizacion --> "*" Contacto
+Organizacion --> "*" Notificador
+
+
+Sector --> "final" Organizacion
+Sector --> "*" Miembro
+
+APie --|> TransportePrivado
+Bicicleta --|> TransportePrivado
+ServicioContratado --|> TransportePrivado
+ServicioContratado --> TipoServicioContratado
+TransportePrivado --|> Transporte
+TransportePrivado --> Geolocalizacion
+TransportePrivado --> FactorEmision
+TransportePublico --|> Transporte
+TransportePublico --> TipoTransportePublico
+TransportePublico --> "*" Parada
+TransportePublico --> FactorEmision
+
+VehiculoParticular --|> TransportePrivado
+VehiculoParticular --> TipoVehiculo
+VehiculoParticular --> TipoCombustible
+
+Tramo --> Transporte
+Tramo --> "inicio" Punto
+Tramo --> "final" Punto
+Trayecto --> "*" Tramo
+
+FactorEmision --> TipoConsumo
+
+Punto --> Direccion
+Punto --> Parada
+
+Geodds ..|> Geolocalizacion
+
+AgenteSectorial --> SectorTerritorial
+
+NotificacionCalendarizada --> Organizacion
+NotificarPorMail ..|> Notificador
+NotificarPorWhatsApp ..|> Notificador
+
+Temporizador --> Organizacion
+
+Medicion --> TipoConsumo
+
+SectorTerritorial --> "*" Organizacion
+SectorTerritorial --> TipoSectorTerritorial
+@enduml

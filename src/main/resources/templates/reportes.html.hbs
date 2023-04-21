@@ -1,0 +1,106 @@
+{{#partial "titulo"}}
+    <title>Reportes</title>
+{{/partial}}
+
+{{#partial "contenido"}}
+        <h1 align="center">Reportes de HC</h1>
+        <span name="errorLogin">{{errorLogin}}</span>
+        <form name="reportes-form" class="reportes-form formulario" action="/reportes" method="post">
+
+        <div class="form-group">
+              <label for="tipoReporte">Seleccione un reporte</label>
+              <select id="reporteSelect" class="form-control" name="tipoReporte" onchange="mostrarSelect()">
+                <option value>seleccione</option>
+                <option value="1">HC total por sector territorial</option>
+                <option value="2">HC total por tipo de Organización</option>
+                <option value="3">Composición de HC total de un sector territorial</option>
+                <option value="4">Composición de HC total de una Organización</option>
+                <option value="5">Evolución de HC total de un sector territorial</option>
+                <option value="6">Evolución de HC total de una Organización</option>
+              </select>
+        </div>
+
+        <div id="organizacionDiv" class="form-group" hidden>
+            <label for="organizacion">Seleccione una organizacion</label>
+            <select class="form-control" name="organizacion">
+                <option value>seleccione</option>
+                {{#each organizaciones}}
+                <option value={{this.id}}>{{this.razonSocial}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div id="sectorTerritorialDiv" class="form-group" hidden>
+            <label for="sectorTerritorial">Seleccione un sector</label>
+            <select class="form-control" name="sectorTerritorial">
+                <option value>seleccione</option>
+                {{#each sectores}}
+                <option value={{this.id}}>{{this.nombre}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div id="unidadesDiv" class="form-group">
+            <label for="unidad">Seleccione una unidad</label>
+            <select class="form-control" name="unidad">
+                <option value>seleccione</option>
+                <option value="kgCO2eq/kWh">kgCO2eq/kWh</option>
+                <option value="gCO2eq/m3">gCO2eq/m3</option>
+            </select>
+        </div>
+
+        <button type="submit" name="submit" class="btn btn-success btn-block">Generar</button>
+        </form>
+
+        {{#if contenido}}
+        <table class="table table-hover">
+          <thead>
+            <tr class="bg-success">
+            {{#if esSector}}
+              <th scope="col">Sector</th>
+            {{else}}
+              <th scope="col">Tipo de Organización</th>
+            {{/if}}
+              <th scope="col">Unidad</th>
+              <th scope="col">HC total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each contenido}}
+              <tr>
+                <th scope="row">{{@key}}</th>
+                <td>{{unidad}}</td>
+                <td>{{this}}</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        {{/if}}
+
+<script>
+        function mostrarSelect() {
+            var selectValue = document.getElementById("reporteSelect").value;
+            if(selectValue == 3 || selectValue == 5){
+                document.getElementById("sectorTerritorialDiv").removeAttribute("hidden");
+                document.getElementById("organizacionDiv").setAttribute("hidden",true);
+                if(selectValue == 3){
+                    document.getElementById("unidadesDiv").setAttribute("hidden",true);
+                }
+            }
+            else if(selectValue == 4 || selectValue == 6){
+                document.getElementById("organizacionDiv").removeAttribute("hidden");
+                document.getElementById("sectorTerritorialDiv").setAttribute("hidden",true);
+                if(selectValue == 4){
+                    document.getElementById("unidadesDiv").setAttribute("hidden",true);
+                }
+            } else {
+                document.getElementById("sectorTerritorialDiv").setAttribute("hidden",true);
+                document.getElementById("organizacionDiv").setAttribute("hidden",true);
+                document.getElementById("unidadesDiv").removeAttribute("hidden");
+            }
+        }
+</script>
+
+{{/partial}}
+
+{{> layout.html.hbs }}
